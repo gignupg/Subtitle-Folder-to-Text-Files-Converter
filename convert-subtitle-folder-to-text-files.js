@@ -1,5 +1,4 @@
 import fs from 'fs';
-import os from 'os';
 import path from 'path';
 import { parse } from 'subtitle';
 import detectCharacterEncoding from 'detect-character-encoding';
@@ -9,11 +8,30 @@ const encodingTable = {
   "UTF-8": "utf8"
 };
 
-const homedir = os.homedir();
+var walk = function (dir, done) {
+  var results = [];
+  fs.readdir(dir, function (err, list) {
+    if (err) return done(err);
+    var pending = list.length;
+    if (!pending) return done(null, results);
+    list.forEach(function (file) {
+      file = path.resolve(dir, file);
+      fs.stat(file, function (err, stat) {
+        if (stat && stat.isDirectory()) {
+          walk(file, function (err, res) {
+            results = results.concat(res);
+            if (!--pending) done(null, results);
+          });
+        } else {
+          results.push(file);
+          if (!--pending) done(null, results);
+        }
+      });
+    });
+  });
+};
 
-const downloadDir = path.join(homedir, '/Downloads');
-
-fs.readdir(downloadDir, function (err, files) {
+walk("./", function (err, files) {
   if (err) {
     console.log("File cannot be properly processed for the following reason:", err);
 
@@ -46,7 +64,6 @@ fs.readdir(downloadDir, function (err, files) {
                 subtitleText += `${text}\n`;
               }
             }
-
           }
         })
         .on('finish', () => {
@@ -57,8 +74,4 @@ fs.readdir(downloadDir, function (err, files) {
     }
   }
 });
-
-setTimeout(() => {
-
-}, 2000);
 
