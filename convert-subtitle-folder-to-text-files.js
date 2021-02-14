@@ -47,10 +47,15 @@ walk("./", function (err, files) {
       const fileBuffer = fs.readFileSync(srtFile);
       const fileEncoding = detectCharacterEncoding(fileBuffer);
 
+      if (!encodingTable[fileEncoding.encoding]) {
+        console.log("Unknown file encoding!");
+        return null;
+      }
+
       let subtitleText = "";
       let index = 0;
 
-      fs.createReadStream(srtFile, encodingTable[fileEncoding])
+      fs.createReadStream(fileName, encodingTable[fileEncoding.encoding])
         .pipe(parse())
         .on('data', (node) => {
           if (node.type === 'cue') {
