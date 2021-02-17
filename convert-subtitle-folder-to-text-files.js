@@ -55,7 +55,7 @@ walk("./", function (err, files) {
       let subtitleText = "";
       let index = 0;
 
-      fs.createReadStream(fileName, encodingTable[fileEncoding.encoding])
+      fs.createReadStream(srtFile, encodingTable[fileEncoding.encoding])
         .pipe(parse())
         .on('data', (node) => {
           if (node.type === 'cue') {
